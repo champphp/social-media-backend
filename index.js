@@ -1,4 +1,5 @@
-const {ApolloServer, PubSub} = require('apollo-server')
+const express = require('express')
+const {ApolloServer, PubSub} = require('apollo-server-express')
 const mongoose = require('mongoose')
 
 const typeDefs = require('./graphql/typeDefs')
@@ -10,9 +11,14 @@ const pubsub = new PubSub()
 const server = new ApolloServer({
   typeDefs,
   resolvers,
-  cors: true,
   context:({req}) => ({req, pubsub})
 }) 
+
+const port = process.env.PORT || 5000
+const app = express()
+const path = '/';
+
+server.applyMiddleware({app, path})
 
 mongoose.connect(urlDB, {
   useNewUrlParser: true,
@@ -24,7 +30,6 @@ mongoose.connect(urlDB, {
     console.log('connect DB')
   }).catch((e) => console.error(e))
 
-server.listen({port: 5000})
-  .then((res) => {
-    console.log(`Server running at ${res.url}`)
-  })
+app.listen({port}, () => {
+  console.log(`Server running at ${port}`)
+})
